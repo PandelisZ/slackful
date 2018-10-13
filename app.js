@@ -25,21 +25,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/slackBuildWebhook', slackExpress({
-  scope: process.env.SCOPE,
-  token: token,
+  scope: 'commands',
   store: 'data.json',
   client_id: process.env.CLIENT_ID,
   client_secret: process.env.CLIENT_SECRET
 }));
 
 // register a slash command handler
-slackExpress.on('/deploy', (payload, message)=> {
+slackExpress.on('slash_command', (payload, bot)=> {
 
   console.log(payload)
 
   // web.files.list({channel})s
 
-  message.reply('Weeee')
+  bot.reply('Weeee')
 })
 
 // catch 404 and forward to error handler
