@@ -23,22 +23,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.post('/slackCommand', (req,res) => {
 
-app.use('/slackBuildWebhook', slackExpress({
-  scope: 'commands',
-  store: 'data.json',
-  client_id: process.env.CLIENT_ID,
-  client_secret: process.env.CLIENT_SECRET
-}));
-
-// register a slash command handler
-slackExpress.on('slash_command', (payload, bot)=> {
-
-  console.log(payload)
-
-  // web.files.list({channel})s
-
-  bot.reply('Weeee')
+  console.log(req);
 })
 
 // catch 404 and forward to error handler
