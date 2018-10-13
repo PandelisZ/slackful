@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+require('dotenv').config()
 
 var indexRouter = require('./routes/index');
 var slackRouter = require('./routes/slack');
@@ -10,6 +11,8 @@ const slackExpress = require('express-slack')
 const slack = require('@slack/client');
 const token = process.env.SLACK_TOKEN;
 const web = new slack.WebClient(token);
+const axios = require('axios');
+const fs = require('fs-extra')
 
 var app = express();
 
@@ -23,9 +26,38 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.post('/slackCommand', (req,res) => {
+app.post('/slackCommand', async (req, res) => {
 
-  console.log(req);
+  const channelId = req.body.channel_id
+
+  const files = await web.files.list({channel: channelId})
+
+  const fileContents = await Promise.all(files.files.map(async (file) => {
+     return await web.files.info({file: file.id})
+  }));
+
+
+  const writeFiles = await Promise.all(fileContents.map(async (f) => {
+    const url = f.file.url_private_download
+
+    console.log(f)
+
+    const download = await axios.get(
+      url,
+      {
+        responseType: 'buffer',
+        headers: {
+        "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    fs.outputFile(path.join(__dirname, 'public') + `/${f.file.title}`, download.data, err => {
+      console.log(err)
+    })
+
+  }))
+
 })
 
 // catch 404 and forward to error handler
