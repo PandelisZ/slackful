@@ -6,10 +6,10 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var slackRouter = require('./routes/slack');
-const slackExpress = require('slack-express')
+const slackExpress = require('express-slack')
 const slack = require('@slack/client');
 const token = process.env.SLACK_TOKEN;
-const web = new WebClient(token);
+const web = new slack.WebClient(token);
 
 var app = express();
 
@@ -24,18 +24,23 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
+app.use('/slackBuildWebhook', slackExpress({
+  scope: process.env.SCOPE,
+  token: token,
+  store: 'data.json',
+  client_id: process.env.CLIENT_ID,
+  client_secret: process.env.CLIENT_SECRET
+}));
 
 // register a slash command handler
-slackExpress.slash('/deploy', (payload, message)=> {
+slackExpress.on('/deploy', (payload, message)=> {
 
   console.log(payload)
 
   // web.files.list({channel})s
 
-  message({text:'Weeee'})
+  message.reply('Weeee')
 })
-
-app.use('/slackBuildWebhook', slackExpress);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
