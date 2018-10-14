@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var rimraf = require('rimraf');
 require('dotenv').config()
 
 const slack = require('@slack/client');
@@ -35,10 +36,16 @@ app.post('/slackCommand', async (req, res) => {
 
   const writeFiles = await Promise.all(fileContents.map(async (f) => {
     const url = f.file.url_private_download
-
-    if(!f.file.title == RegExp(`.+\..+`)){ // TODO: Check for file extension in name
-      resp.send(`File name '` + f.file.title + `' is invalid. Add file extension to name!`)
+    try {
+       rimraf('public', function () { console.log('Directory cleaned.'); });
+    } catch (e) {
+      console.log(e)
     }
+   
+
+    // if(!f.file.title == RegExp(`.+\..+`)){ // TODO: Check for file extension in name
+    //   resp.send(`File name '` + f.file.title + `' is invalid. Add file extension to name!`)
+    // }
 
     console.log(f)
 
@@ -52,7 +59,7 @@ app.post('/slackCommand', async (req, res) => {
       }
     );
 
-    fs.outputFile(path.join(__dirname, 'public') + `/${f.file.title}`, download.data, err => {
+    await fs.outputFile(path.join(__dirname, 'public') + `/${f.file.title}`, download.data, err => {
       console.log(err)
     })
 
