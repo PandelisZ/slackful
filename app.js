@@ -5,9 +5,6 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config()
 
-var indexRouter = require('./routes/index');
-var slackRouter = require('./routes/slack');
-const slackExpress = require('express-slack')
 const slack = require('@slack/client');
 const token = process.env.SLACK_TOKEN;
 const web = new slack.WebClient(token);
@@ -36,9 +33,12 @@ app.post('/slackCommand', async (req, res) => {
      return await web.files.info({file: file.id})
   }));
 
-
   const writeFiles = await Promise.all(fileContents.map(async (f) => {
     const url = f.file.url_private_download
+
+    if(!f.file.title == RegExp(`.+\..+`)){ // TODO: Check for file extension in name
+      resp.send(`File name '` + f.file.title + `' is invalid. Add file extension to name!`)
+    }
 
     console.log(f)
 
@@ -56,8 +56,8 @@ app.post('/slackCommand', async (req, res) => {
       console.log(err)
     })
 
+    res.send('Deployed!')
   }))
-
 })
 
 // catch 404 and forward to error handler
