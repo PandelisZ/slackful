@@ -47,6 +47,10 @@ app.post('/slackCommand', async (req, res) => {
     //   resp.send(`File name '` + f.file.title + `' is invalid. Add file extension to name!`)
     // }
 
+    if(!f.file.title == RegExp(`.+\..+`)){ // TODO: Check for file extension in name
+      resp.send(`File name '` + f.file.title + `' is invalid. Add file extension to name!`)
+    }
+
     console.log(f)
 
     const download = await axios.get(
